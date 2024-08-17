@@ -5,7 +5,7 @@ metadata:
   name: {{ .Release.Name }}
 spec:
   hosts:
-  - "httpbin-3.example.com"
+  - {{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local
   gateways:
   - httpbin-gateway-3
   http:
