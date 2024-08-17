@@ -1,0 +1,62 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  replicas: 5
+  strategy:
+    # blueGreen:
+    #   activeService: httpbin-2
+    #   previewService: httpbin-2-canary
+    #   autoPromotionEnabled: true
+    canary:
+      # dynamicStableScale: true
+      # abortScaleDownDelaySeconds: 600
+      # maxSurge: "100%"
+      # maxUnavailable: "10%" 
+      # canaryService: httpbin-2-canary
+      # stableService: httpbin-2
+      trafficRouting:
+        managedRoutes:
+          - name: set-header-1
+        istio:
+          virtualServices:
+          - name: {{ .Release.Name }} # At least one virtualService is required
+            routes:
+            - primary # At least one route is required
+          destinationRule:
+            name: {{ .Release.Name }}
+            canarySubsetName: v2
+            stableSubsetName: v1
+      steps:
+      - setCanaryScale:
+          replicas: 5
+      - pause: { duration: 3m }
+      - setWeight: 100
+  # revisionHistoryLimit: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        version: 1.0.12
+        istio-injection: enabled
+    spec:
+      containers:
+      - name: {{ .Release.Name }}
+        image: docker.io/lsantana/application:1.0.12
+        # command: ["./cmd/app/1"]
+        ports:
+        - name: http
+          containerPort: 8087
+          protocol: TCP
+        env:
+        - name: VERSION
+          value: 1.0.12
+        resources:
+          requests:
+            memory: 32Mi
+            cpu: 5m
