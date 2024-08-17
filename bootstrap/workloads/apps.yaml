@@ -1,0 +1,33 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: bootstrap-apps
+  namespace: default
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io/background
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - git:
+      repoURL: https://gitlab.com/luanosantana/validate-arch.git
+      revision: HEAD
+      directories:
+      - path: workloads/apps/*
+  template:
+    metadata:
+      name: '{{.path.basename}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://gitlab.com/luanosantana/validate-arch.git
+        targetRevision: HEAD
+        path: '{{.path.path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{.path.basename}}'
+      syncPolicy:
+        automated: {}  
+        syncOptions:
+        - CreateNamespace=true

@@ -1,0 +1,81 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: elements-yaml
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+  - matrix:
+      generators:
+      - git:
+          repoURL: https://github.com/argoproj/argo-cd.git
+          revision: HEAD
+          files:
+          - path: applicationset/examples/list-generator/list-elementsYaml-example.yaml
+      - list:
+          elementsYaml: "{{ .key.components | toJson }}"
+  template:
+    metadata:
+      name: '{{.name}}'
+    spec:
+      project: default
+      syncPolicy:
+        automated:
+          selfHeal: true    
+        syncOptions:
+        - CreateNamespace=true        
+      sources:
+        - chart: '{{.chart}}'
+          repoURL: '{{.repoUrl}}'
+          targetRevision: '{{.version}}'
+          helm:
+            releaseName: '{{.releaseName}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{.namespace}}'
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: main
+spec:
+  generators:
+  - list:
+      elements:
+        - appName: metrics-server
+          namespace: kube-system
+        - appName: ingress-nginx
+          namespace: ingress-nginx
+        - appName: cluster-autoscaler
+          namespace: kube-system
+        - appName: kubernetes-dashboard
+          namespace: kubernetes-dashboard
+  template:
+    metadata:
+      name: "{{appName}}"
+      annotations:
+        argocd.argoproj.io/manifest-generate-paths: ".;.."
+    spec:
+      project: bootstrap
+      source:
+        repoURL: git@github.com:mprzygrodzki/aws-eks-bootstrap.git
+        targetRevision: HEAD
+        path: "charts/{{appName}}"
+        helm:
+          # Release name override (defaults to application name)
+          releaseName: "{{appName}}"
+          valueFiles:
+          - "values.yaml"
+          - "../../values/{{name}}/{{appName}}/values.yaml"
+      destination:
+        # Default base cluster
+        name: in-cluster
+        namespace: "{{namespace}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

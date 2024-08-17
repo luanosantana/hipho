@@ -1,0 +1,16 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    release: {{$.Release.Name}}-{{ $.Values.DEPLOYMENT.ENV_COLOR }}
+spec:
+  host: app4-{{ $.Values.DEPLOYMENT.ENV_COLOR }}
+  subsets:
+    - name: release
+      labels:
+        app: app4-{{ $.Values.DEPLOYMENT.ENV_COLOR }}
+    - name: canary
+      labels:
+        app: app4-{{ $.Values.DEPLOYMENT.ENV_COLOR }}

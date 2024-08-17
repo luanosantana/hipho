@@ -1,0 +1,12 @@
+name: application
+version: 1.0.13
+port: 8087
+
+type: backend
+
+configurations:
+  - name: VERSION
+    secure: true
+    value: v1
+  - name: HOST_REQUEST
+    value: http://httpbin-2.applications.svc.cluster.local/health

@@ -1,0 +1,16 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: {{ .Release.Name }}-error-rate
+spec:
+  args:
+    - name: app-name
+    - name: canary-pod-hash
+  metrics:
+    - name: percentage-error
+      failureCondition: result.percentageError != nil && result.percentageError >= 20
+      initialDelay: 300s
+      interval: 60s
+      provider: {}
+      successCondition: result.percentageError != nil && result.percentageError < 20

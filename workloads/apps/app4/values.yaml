@@ -1,0 +1,53 @@
+pods:
+  hpa:
+    enabled: true
+    cpuPercentTrigger: 65
+    minReplicas:
+      release: 5
+    maxReplicas:
+      release: 10
+  SIDECAR:
+    ENABLED: true
+rollout:
+  strategy:
+    canary:
+      trafficRouting:
+        istio:
+          destinationRule:
+            stableSubsetName: release
+            canarySubsetName: canary
+            name: app4
+          virtualService:
+            name: app4
+            routes:
+              - 'app4-delegate-route'
+conf:
+  tsConfig: prod.config.ts
+  CONFIG_TYPE: joker-prod
+newRelic:
+  appName: app4-prod
+RESOURCES:
+  LIMITS_MEMORY: 3Gi
+  LIMITS_CPU: 1500m
+  REQUESTS_MEMORY: 1Gi
+  REQUESTS_CPU: 1000m
+jokerSession:
+  publicKey: ""
+  value: ""
+  keyType: ""
+DEPLOYMENT:
+  ENV_COLOR: "green"
+  BUILD_BUILDNUMBER: ""
+  BUILD_SOURCEBRANCH: ""
+  DEPLOYKEY: ""
+  VERSION: ""
+  RELEASE_ATTEMPTNUMBER: ""
+  RELEASE_DEPLOYMENTID: ""
+  RELEASE_DEPLOYMENT_STARTTIME: ""
+  RELEASE_RELEASEID: ""
+  RELEASE_RELEASENAME: ""
+ownershipLabels:
+  businessStructure: ok1
+  director: ok2
+  valueStream: ok3
+  teamName: ok4

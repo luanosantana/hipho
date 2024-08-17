@@ -1,0 +1,23 @@
+---
+apiVersion: argoproj.io/v1alpha1 
+kind: Rollout              
+metadata:
+  name: {{ .Chart.Name }}
+spec:
+  {{- if not .Values.pods.hpa.enabled }}
+  replicas: {{ .Values.pods.hpa.minReplicas.Release }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+      version: release
+      release: {{ $.Release.Name }}
+  workloadRef:                              
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Chart.Name }}
+  strategy:
+{{- with .Values.rollout.strategy }}
+{{ toYaml .| indent 4 }}
+{{- end }}
+

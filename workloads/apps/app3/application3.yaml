@@ -1,0 +1,103 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: httpbin-3
+  namespace: applications
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbin-3
+  namespace: applications
+  labels:
+    app: httpbin-3
+    service: httpbin-3
+spec:
+  ports:
+  - name: http-v1-3
+    port: 8000
+    targetPort: 8087
+  selector:
+    app: httpbin-3
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbin-3
+  namespace: applications
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpbin-3
+      version: v1-3
+  template:
+    metadata:
+      labels:
+        app: httpbin-3
+        version: v1-3
+    spec:
+      serviceAccountName: httpbin-3
+      containers:
+      - image: docker.io/lsantana/application:1.0.13
+        imagePullPolicy: IfNotPresent
+        name: httpbin-3
+        env:
+        - name: VERSION
+          value: v1
+        - name: HOST_REQUEST
+          value: http://httpbin-2.applications.svc.cluster.local/health
+        ports:
+        - containerPort: 8087
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: httpbin-gateway-3
+  namespace: applications
+spec:
+  # The selector matches the ingress gateway pod labels.
+  # If you installed Istio using Helm following the standard documentation, this would be "istio=ingress"
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http-3
+      protocol: HTTP
+    hosts:
+    - "httpbin-3.example.com"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: httpbin-3
+  namespace: applications
+spec:
+  hosts:
+  - "httpbin-3.example.com"
+  gateways:
+  - httpbin-gateway-3
+  http:
+  - match:
+    - uri:
+        prefix: /health
+    route:
+    - destination:
+        port:
+          number: 8000
+        host: httpbin-3.applications.svc.cluster.local
+        subset: v1-3
+      weight: 100
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: httpbin-3
+  namespace: applications
+spec:
+  host: httpbin-3.applications.svc.cluster.local
+  subsets:
+  - labels:
+      version: v1-3
+    name: v1-3

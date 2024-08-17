@@ -1,0 +1,56 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: {{ .Values.name }}
+spec:
+  # The selector matches the ingress gateway pod labels.
+  # If you installed Istio using Helm following the standard documentation, this would be "istio=ingress"
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "{{ .Values.name }}.los.com"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ .Values.name }}
+spec:
+  hosts:
+  - "{{ .Values.name }}.los.com"
+  gateways:
+  - {{ .Values.name }}
+  http:
+  - name: {{ .Values.name }}
+    route:
+    - destination:
+        port:
+          number: 8000
+        host: {{ .Values.name }}.{{ .Release.Namespace }}.svc.cluster.local
+        subset: release
+      weight: 100
+    - destination:
+        port:
+          number: 8000
+        host: {{ .Values.name }}.{{ .Release.Namespace }}.svc.cluster.local
+        subset: canary
+      weight: 0
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: {{ .Values.name }}
+spec:
+  host: {{ .Values.name }}.{{ .Release.Namespace }}.svc.cluster.local
+  subsets:
+  - name: release
+    labels:
+      app: {{ .Values.name }}
+  - name: canary
+    labels:
+      app: {{ .Values.name }}

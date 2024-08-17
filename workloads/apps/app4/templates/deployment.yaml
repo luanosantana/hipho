@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Chart.Name }}
+  labels:
+    account: {{ .Chart.Name }}
+
+{{- range $appVersionName, $appVersion := dict "release" $.Chart.AppVersion }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $.Chart.Name }}
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: {{ $.Chart.Name }}
+      release: {{ $.Release.Name }}
+      version: {{ $appVersionName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $.Chart.Name }}
+        release: {{ $.Release.Name }}
+        version: {{ $appVersionName }}
+      annotations:
+        sidecar.istio.io/inject: {{ $.Values.pods.SIDECAR.ENABLED | quote }}
+    spec:
+      serviceAccountName: {{ $.Chart.Name }}
+      terminationGracePeriodSeconds: 180
+      imagePullSecrets:
+        - name: acr-auths
+      containers:
+        - name: {{ $.Chart.Name }}
+          image: "docker.io/lsantana/application:1.0.13"
+          imagePullPolicy: Always
+          ports:
+            - name: {{ $.Chart.Name }}
+              containerPort: 3000
+{{- end }}

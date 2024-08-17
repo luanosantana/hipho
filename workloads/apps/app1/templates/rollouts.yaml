@@ -1,0 +1,49 @@
+---
+apiVersion: argoproj.io/v1alpha1 
+kind: Rollout              
+metadata:
+  name: {{ .Values.name }}
+spec:
+  replicas: {{ default 3 .Values.minReplicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+      version: {{ .Values.version }}
+  workloadRef:                              
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ $.Values.name }}
+  strategy:
+    canary: {}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Values.name }}
+spec:
+  scaleTargetRef:
+    apiVersion: argoproj.io/v1alpha1
+    kind: Rollout
+    name:  {{ .Values.name }}
+  minReplicas: {{ default 3 .Values.minReplicas }}
+  maxReplicas: {{ default 10 .Values.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 15
