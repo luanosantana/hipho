@@ -1,0 +1,21 @@
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  hosts:
+  - "httpbin-3.example.com"
+  gateways:
+  - httpbin-gateway-3
+  http:
+  - match:
+    - uri:
+        prefix: /health
+    route:
+    - destination:
+        port:
+          number: 8000
+        host: {{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local
+        subset: v1-3
+      weight: 100

@@ -19,7 +19,7 @@ IP From `minikube tunnel`
 
 ```
 10.110.175.60 httpbin.example.com
-10.110.175.60 httpbin-3.example.com
+10.110.175.60 {{ .Release.Name }}.example.com
 ```
 
 

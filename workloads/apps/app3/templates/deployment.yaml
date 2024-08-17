@@ -1,0 +1,29 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      version: v1-3
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        version: v1-3
+    spec:
+      serviceAccountName: {{ .Release.Name }}
+      containers:
+      - image: docker.io/lsantana/application:1.0.13
+        imagePullPolicy: IfNotPresent
+        name: {{ .Release.Name }}
+        env:
+        - name: VERSION
+          value: v1
+        - name: HOST_REQUEST
+          value: http://httpbin-2.app2.svc.cluster.local/health
+        ports:
+        - containerPort: 8087
