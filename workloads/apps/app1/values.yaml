@@ -5,8 +5,8 @@ port: 8087
 type: backend
 
 configurations:
-  - name: VERSION
+  - name: version
     secure: true
     value: v1
-  - name: HOST_REQUEST
+  - name: host_request
     value: http://httpbin-2.applications.svc.cluster.local/health

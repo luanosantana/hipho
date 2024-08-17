@@ -24,10 +24,10 @@ spec:
         env:
         {{- range $key, $value := .Values.configurations }}
         {{- if $value.secure }}
-        - name: {{ $value.name }}
+        - name: {{ $value.name | upper }}
           value: secret
         {{- else}}
-        - name: {{ $value.name }}
+        - name: {{ $value.name | upper }}
           value: {{ $value.value }}
         {{- end }}
         {{- end }}

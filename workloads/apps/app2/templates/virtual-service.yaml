@@ -11,13 +11,13 @@ spec:
     route:
     - destination:
         host: {{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local
-        subset: v1
+        subset: release
         port:
           number: 8000
       weight: 100
     - destination:
         host: {{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local
-        subset: v2
+        subset: canary
         port:
           number: 8000
       weight: 0

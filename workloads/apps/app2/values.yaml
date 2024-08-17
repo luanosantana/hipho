@@ -1,5 +1,9 @@
 name: application
-version: 1.0.13
+version: &version 1.0.13
 port: 8087
 
 type: backend
+
+configurations:
+  - name: version
+    value: *version
