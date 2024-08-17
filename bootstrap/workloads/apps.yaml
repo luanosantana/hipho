@@ -11,7 +11,7 @@ spec:
   goTemplateOptions: ["missingkey=error"]
   generators:
   - git:
-      repoURL: https://gitlab.com/luanosantana/validate-arch.git
+      repoURL: https://github.com/luanosantana/hipho.git
       revision: HEAD
       directories:
       - path: workloads/apps/*
@@ -21,7 +21,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://gitlab.com/luanosantana/validate-arch.git
+        repoURL: https://github.com/luanosantana/hipho.git
         targetRevision: HEAD
         path: '{{.path.path}}'
       destination:
