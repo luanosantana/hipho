@@ -48,16 +48,7 @@ output
 Install istio according to the official configuration and then initialize istio in the kubernetes cluster using the CDR, using the command below. [[doc](https://istio.io/latest/docs/setup/getting-started/#download)]
 
 ```
-$ istioctl install -f https://raw.githubusercontent.com/istio/istio/release-1.23/samples/bookinfo/demo-profile-no-gateways.yaml -y
-```
-
-```
-output
----
-✔ Istio core installed
-✔ Istiod installed
-✔ Installation complete
-Made this installation the default for injection and validation.
+$ istioctl manifest generate | kubectl apply -f -
 ```
 
 To configure Kiali, use:
